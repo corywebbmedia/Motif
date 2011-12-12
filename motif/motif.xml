@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="library" method="upgrade" version="1.7.0">
+	<name>Motif</name>
+	<libraryname>motif</libraryname>
+	<author>Cory Webb</author>
+	<creationDate>December 2011</creationDate>
+	<copyright>Copyright (C) 2011 Cory Webb Media, LLC. All rights reserved.</copyright>
+	<license>http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL</license>
+	<authorEmail>themeables@corywebbmedia.com</authorEmail>
+	<authorUrl>www.themeables.com</authorUrl>
+	<version>2.0</version>
+	<description>Rapid template development toolkit built by Cory Webb Media for Themeables.</description>
+
+	<files>
+		<folder>css</folder>
+		<folder>elements</folder>
+		<folder>js</folder>
+		<filename>files.php</filename>
+		<filename>index.html</filename>
+		<filename>less.php</filename>
+		<filename>motif.php</filename>
+		<filename>shortcuts.php</filename>
+	</files>
+</extension>

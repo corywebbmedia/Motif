@@ -1,0 +1,32 @@
+/**
+* Copyright:	Copyright (C) 2010 Cory Webb Media, LLC. All rights reserved.
+* License:	GNU/GPL
+* Motif is free software. This version may have been modified pursuant
+* to the GNU General Public License, and as distributed it includes or
+* is derivative of works licensed under the GNU General Public License or
+* other free or open source software licenses.
+*/
+
+.outlinefile { position: relative; }
+.outlineoverlay {
+	background-color: #0f0;
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	top: 0;
+	left: 0;
+	/* for IE */
+	filter:alpha(opacity=20);
+	/* CSS3 standard */
+	opacity:0.2;
+}
+.outlinefile h3.outlinelabel {
+	position: absolute;
+	top: 5px;
+	left: 5px;
+	text-align: right;
+	color: #000;
+	margin: 0;
+	padding: 0;
+	z-index: 3;
+}

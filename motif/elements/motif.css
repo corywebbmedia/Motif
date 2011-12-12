@@ -1,0 +1,44 @@
+/**
+* Copyright:	Copyright (C) 2010 Cory Webb Media, LLC. All rights reserved.
+* License:	GNU/GPL
+* Motif is free software. This version may have been modified pursuant
+* to the GNU General Public License, and as distributed it includes or
+* is derivative of works licensed under the GNU General Public License or
+* other free or open source software licenses.
+*/
+
+
+.clr { clear: both; }
+
+h3.toggler {
+	padding: 0 5px 0 20px;
+	font-size: 14px;
+	font-weight: normal;
+	line-height: 22px;
+	background: #fff url(bg_toggler.gif) no-repeat;
+	color: #000;
+	margin: 0 0 5px;
+	cursor: pointer;
+}
+.themeparams h3 {
+	font-size: 14px;
+	font-weight: normal;
+	margin: 0 0 5px;
+}
+.themeparams p {
+	margin: 0 0 10px;
+}
+div#accordion {
+	width: 350px;
+	margin: 0 auto;
+}
+div.themeparams {
+	padding: 0 5px 5px;
+}
+div.menulist { margin-bottom: 5px; }
+
+td.paramlist_key { display: none; }
+td.paramlist_value td.paramlist_key { display: table-cell; }
+td.paramlist_value table.paramlist { margin-bottom: 20px; }
+table.admintable { width: 100%; }
+td.paramlist_value tr:hover td.paramlist_value { background-color: #f6f6f6; }
