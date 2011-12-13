@@ -35,7 +35,7 @@ class Motif extends JObject
 	var $_debug					= 0;
 	var $_bodyClass				= '';
 	var $_plugins				= 0;
-	var $_files					= null;
+	var $files					= null;
 
 	function __construct( &$document, $context, $usethemes=1 )
 	{
@@ -56,7 +56,7 @@ class Motif extends JObject
 		$this->_images = array();
 		$this->_debug = $this->getParameter('debug') && JRequest::getVar('debug', 0);
 		$this->_plugins = $this->getParameter('plugins');
-		$this->_files = new MotifFiles($this->_doc, $this->_browser, $this->_context, $this->_usethemes, $this->_theme, $this->_coretheme, $this->_debug);
+		$this->files = new MotifFiles($this->_doc, $this->_browser, $this->_context, $this->_usethemes, $this->_theme, $this->_coretheme, $this->_debug);
 		$this->compileLess();
 		
 		$this->triggerEvent('onAfterMotifLoad', array(&$this));
@@ -125,7 +125,7 @@ class Motif extends JObject
 	// loads information in the <head></head> area of the document
 	function loadHead( )
 	{
-		$this->_files->getFile( 'beforehead.php', 1 );
+		$this->files->getFile( 'beforehead.php', 1 );
 		?>
 		<jdoc:include type="head" />
 		<?php
@@ -133,7 +133,7 @@ class Motif extends JObject
 		$this->_loadFiles('css');
 		echo '<!-- LOAD JS -->';
 		$this->_loadFiles('js');
-		$this->_files->getFile( 'head.php', 1 );
+		$this->files->getFile( 'head.php', 1 );
 		if ($this->_debug) echo '<link rel="stylesheet" type="text/css" href="'.$this->_doc->baseurl.'/libraries/motif/css/debug.css" />'."\n";
 	}
 	
@@ -185,7 +185,7 @@ class Motif extends JObject
 	// Loads CSS/JS files
 	function _loadFiles($ext)
 	{	
-		$files = $this->_files->get($ext);
+		$files = $this->files->get($ext);
 
 		$fileload['css'][] = '<link rel="stylesheet" type="text/css" href="';
 		$fileload['css'][] = '" />';
@@ -349,17 +349,17 @@ class Motif extends JObject
 
 	function loadModuleChrome()
 	{
-		if($this->_themes) $this->_files->getFile('html'.DS.'modules.php');
+		if($this->_themes) $this->files->getFile('html'.DS.'modules.php');
 	}
 	
 	function getMotifFiles()
 	{
-		return $this->_files;
+		return $this->files;
 	}
 	
 	function compileLess($files=null)
 	{
-		$lessfiles = $files ? $files : $this->_files->get('less');
+		$lessfiles = $files ? $files : $this->files->get('less');
 		
 		if($lessfiles && count($lessfiles))
 		{

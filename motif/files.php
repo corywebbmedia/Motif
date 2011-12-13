@@ -20,13 +20,13 @@ class MotifFiles extends JObject
 	var $_themes				= true;
 	var $_theme					= 'core';
 	var $_coretheme				= 'core';
-	var $_path					= '';
-	var $_paths					= array();
-	var $_url					= '';
-	var $_urls					= array();
+	var $path					= '';
+	var $paths					= array();
+	var $url					= '';
+	var $urls					= array();
 	var $_browser				= null;
 	var $_debug					= 0;
-	var $_images				= array();
+	var $images				= array();
 
 	function __construct( &$document, $browser, $context='index', $themes=true, $theme='core', $coretheme='core', $debug=0 )
 	{
@@ -38,10 +38,10 @@ class MotifFiles extends JObject
 		$this->_themes		= $themes;
 		$this->_theme		= $theme;
 		$this->_coretheme	= $coretheme;
-		$this->_path		= JPATH_THEMES.DS.$this->_doc->template;
-		$this->_paths		= $this->_getPaths();
-		$this->_url			= $this->_doc->baseurl.'/templates/'.$this->_doc->template;
-		$this->_urls		= $this->_getUrls();
+		$this->path		= JPATH_THEMES.DS.$this->_doc->template;
+		$this->paths		= $this->_getPaths();
+		$this->url			= $this->_doc->baseurl.'/templates/'.$this->_doc->template;
+		$this->urls		= $this->_getUrls();
 		$this->_debug		= $debug;
 
 	}
@@ -52,10 +52,10 @@ class MotifFiles extends JObject
 		$paths = array();
 		if($this->_themes)
 		{
-			$paths['theme'] = $this->_path.DS.'themes'.DS.$this->_theme;
-			if($this->_theme != $this->_coretheme) $paths['core'] = $this->_path.DS.'themes'.DS.$this->_coretheme;
+			$paths['theme'] = $this->path.DS.'themes'.DS.$this->_theme;
+			if($this->_theme != $this->_coretheme) $paths['core'] = $this->path.DS.'themes'.DS.$this->_coretheme;
 		}
-		$paths['template'] = $this->_path;
+		$paths['template'] = $this->path;
 		return $paths;
 	}
 	
@@ -65,10 +65,10 @@ class MotifFiles extends JObject
 		$urls = array();
 		if($this->_themes)
 		{
-			$urls['theme'] = $this->_url.'/themes/'.$this->_theme;
-			if($this->_theme != $this->_coretheme) $urls['core'] = $this->_url.'/themes/'.$this->_coretheme;
+			$urls['theme'] = $this->url.'/themes/'.$this->_theme;
+			if($this->_theme != $this->_coretheme) $urls['core'] = $this->url.'/themes/'.$this->_coretheme;
 		}
-		$urls['template'] = $this->_url;
+		$urls['template'] = $this->url;
 		return $urls;
 	}
 
@@ -103,10 +103,10 @@ class MotifFiles extends JObject
 		$returnfiles = array();
 		$ext_folder = ($ext == 'less' ? 'css' : $ext);
 		
-		if($this->_paths && count($this->_paths))
+		if($this->paths && count($this->paths))
 		{
 			// STEP 1: Get all files with extension $ext from each path - template, theme, and core theme
-			foreach($this->_paths as $key => $path) {
+			foreach($this->paths as $key => $path) {
 				$files[$key] = array();
 				if (JFile::exists($path.DS.$ext_folder.DS.'order.php'))
 				{
@@ -127,7 +127,7 @@ class MotifFiles extends JObject
 				{
 					foreach($pathfiles as $file)
 					{
-						$returnfiles[] = $this->_paths[$key].DS.'css'.DS.JFile::getName($file);
+						$returnfiles[] = $this->paths[$key].DS.'css'.DS.JFile::getName($file);
 					}
 				}
 			}
@@ -142,9 +142,9 @@ class MotifFiles extends JObject
 						{
 							if (!strstr(JFile::getName($file), 'browser_ie'))
 							{
-								$returnfiles[] = $this->_urls[$key].'/'.$ext_folder.'/'.JFile::getName($file);
+								$returnfiles[] = $this->urls[$key].'/'.$ext_folder.'/'.JFile::getName($file);
 							} else {
-								if ($this->_browsermatch(JFile::getName($file), $ext)) $browserfiles[] = $this->_urls[$key].'/'.$ext_folder.'/'.JFile::getName($file);
+								if ($this->_browsermatch(JFile::getName($file), $ext)) $browserfiles[] = $this->urls[$key].'/'.$ext_folder.'/'.JFile::getName($file);
 							}
 						}
 					}
@@ -179,21 +179,21 @@ class MotifFiles extends JObject
 	
 	function getImage( $name, $ext = 'any' )
 	{
-		if (isset($this->_images[$name]) && $this->_images[$name] != '') return $this->_images[$name];
+		if (isset($this->images[$name]) && $this->images[$name] != '') return $this->images[$name];
 		
 		if (substr($ext, 0, 1) == '.') $ext = substr($ext, 1, strlen($ext)-1);
 		$exts = array('gif', 'jpg', 'png');
 		
-		foreach($this->_paths as $key=>$path)
+		foreach($this->paths as $key=>$path)
 		{
 			$ImagesPath = $path.DS.'images'.DS;
-			$Images = $this->_urls[$key].'/images/';
+			$Images = $this->urls[$key].'/images/';
 			foreach($exts as $myext)
 			{
 				if (($ext == $myext || $ext == 'any') && JFile::exists($ImagesPath.$name.'.'.$myext))
 				{
-					$this->_images[$name] = $Images.$name.'.'.$myext;
-					return $this->_images[$name];
+					$this->images[$name] = $Images.$name.'.'.$myext;
+					return $this->images[$name];
 				}
 			}
 		}
@@ -203,15 +203,15 @@ class MotifFiles extends JObject
 	
 	function setImage( $name, $location )
 	{
-		$this->_images[$name] = $location;
+		$this->images[$name] = $location;
 	}
 	
 	function getFile( $name, $ignoredebug = 0 )
 	{
 		$loadfile = '';
-		if($this->_paths && count($this->_paths))
+		if($this->paths && count($this->paths))
 		{
-			foreach($this->_paths as $path)
+			foreach($this->paths as $path)
 			{
 				if (JFile::exists($path.DS.$name))
 				{
