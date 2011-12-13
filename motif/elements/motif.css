@@ -37,8 +37,8 @@ div.themeparams {
 }
 div.menulist { margin-bottom: 5px; }
 
-td.paramlist_key { display: none; }
-td.paramlist_value td.paramlist_key { display: table-cell; }
+fieldset ul.adminformlist label { display: none; }
+fieldset ul.adminformlist ul.adminformlist label { display: block; }
 td.paramlist_value table.paramlist { margin-bottom: 20px; }
 table.admintable { width: 100%; }
 td.paramlist_value tr:hover td.paramlist_value { background-color: #f6f6f6; }

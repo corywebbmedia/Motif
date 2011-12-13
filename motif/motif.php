@@ -43,7 +43,7 @@ class Motif extends JObject
 		$menu = $mainframe->getMenu();
 		if ($context == 'index' || $context == 'component') JPluginHelper::importPlugin('motif');
 		
-		$this->_doc =& $document;
+		$this->_doc = $document;
 		$this->_browser = $this->getBrowser();
 		$this->_context = $context;
 		$this->_usethemes = $usethemes;
@@ -52,19 +52,19 @@ class Motif extends JObject
 		$this->_setCore();
 		$this->_getTheme();
 		$this->_user = JFactory::getUser();
-		$this->_cfg =& JFactory::getConfig();
+		$this->_cfg = JFactory::getConfig();
 		$this->_images = array();
 		$this->_debug = $this->getParameter('debug') && JRequest::getVar('debug', 0);
 		$this->_plugins = $this->getParameter('plugins');
 		$this->_files = new MotifFiles($this->_doc, $this->_browser, $this->_context, $this->_usethemes, $this->_theme, $this->_coretheme, $this->_debug);
-		$this->_compileLess();
+		$this->compileLess();
 		
 		$this->triggerEvent('onAfterMotifLoad', array(&$this));
 	}
 
 	function _setCore()
 	{
-		if ($this->_browser->_mobile && JFolder::exists($this->_themespath.DS.'mobilecore')) $this->_coretheme = 'mobilecore';
+		if ($this->_browser->isMobile() && JFolder::exists($this->_themespath.DS.'mobilecore')) $this->_coretheme = 'mobilecore';
 	}
 	
 	function _getTheme()
@@ -72,7 +72,7 @@ class Motif extends JObject
 		$this->_theme = ($this->getParameter('theme') ? $this->getParameter('theme') : $this->_coretheme);
 
 		$this->getBrowser();
-		if ($this->_browser->_mobile && $this->getParameter('theme_mobile') != $this->_coretheme) $this->_theme = $this->getParameter('theme_mobile');
+		if ($this->_browser->isMobile() && $this->getParameter('theme_mobile') != $this->_coretheme) $this->_theme = $this->getParameter('theme_mobile');
 		
 		if (JRequest::getVar('theme', 0) && $this->getParameter('manual_theme')) $this->_theme = JRequest::getVar('theme');
 		
@@ -84,7 +84,7 @@ class Motif extends JObject
 	
 	function load()
 	{
-		$mainframe =& JFactory::getApplication();
+		$mainframe = JFactory::getApplication();
 
 		switch ($this->getParameter('doctype'))
 		{
@@ -129,7 +129,9 @@ class Motif extends JObject
 		?>
 		<jdoc:include type="head" />
 		<?php
+		echo '<!-- LOAD CSS -->';
 		$this->_loadFiles('css');
+		echo '<!-- LOAD JS -->';
 		$this->_loadFiles('js');
 		$this->_files->getFile( 'head.php', 1 );
 		if ($this->_debug) echo '<link rel="stylesheet" type="text/css" href="'.$this->_doc->baseurl.'/libraries/motif/css/debug.css" />'."\n";
@@ -214,11 +216,15 @@ class Motif extends JObject
 	
 	function loadModules( $name, $style='', $preHtml='', $postHtml='', $attribs=array() )
 	{
-		$mainframe =& JFactory::getApplication();
+		$mainframe = JFactory::getApplication();
 		if ($this->_plugins) $mainframe->triggerEvent( 'onBeforeLoadModulePosition', array( &$this, &$name, &$style, &$preHtml, &$postHtml, &$attribs ) );
 		if ($style == '') $style = $this->_defaultModuleStyle;
-		if ($style == 'xhtml' && function_exists('modChrome_motifxhtml')) $style = 'motifxhtml';
-		if ($style == 'rounded' && function_exists('modChrome_motifrounded')) $style = 'motifrounded';
+		if(JFile::exists(JPATH_THEMES.DS.$this->_doc->template.DS.'html'.DS.'modules.php'))
+		{
+			require_once(JPATH_THEMES.DS.$this->_doc->template.DS.'html'.DS.'modules.php');
+			if ($style == 'xhtml' && function_exists('modChrome_motifxhtml')) $style = 'motifxhtml';
+			if ($style == 'rounded' && function_exists('modChrome_motifrounded')) $style = 'motifrounded';
+		}
 		if ($this->countModules($name))
 		{
 			$renderer	= $this->_doc->loadRenderer('modules');
@@ -326,7 +332,7 @@ class Motif extends JObject
 	
 	function triggerEvent($event, $params)
 	{
-		$mainframe =& JFactory::getApplication();
+		$mainframe = JFactory::getApplication();
 		if ($this->_plugins && ($this->_context == 'index' || $this->_context == 'component'))
 			$mainframe->triggerEvent( $event, $params);
 	}
@@ -355,9 +361,12 @@ class Motif extends JObject
 	{
 		$lessfiles = $files ? $files : $this->_files->get('less');
 		
-		foreach($lessfiles as $lessfile)
+		if($lessfiles && count($lessfiles))
 		{
-			lessc::ccompile($lessfile, str_replace('.less', '.css', $lessfile));
+			foreach($lessfiles as $lessfile)
+			{
+				lessc::ccompile($lessfile, str_replace('.less', '.css', $lessfile));
+			}
 		}
 	}
 

@@ -8,21 +8,23 @@
 * other free or open source software licenses.
 */
 
-defined('JPATH_BASE') or die();
-
-class JElementMotif extends JElement
+class JFormFieldMotif extends JFormField
 {
-	var	$_name = 'Motif';
-	var $_templateName = '';
-	var $_templatePath = '';
-	var $_themesPath = '';
-	var $_themesURL = '';
-	var $_themes = null;
-
-	function fetchElement($name, $value, &$node, $control_name)
-	{
+	protected $type = 'Motif';
+	
+	public function getInput() {
+	
 		jimport( 'joomla.filesystem.file' );
 		jimport( 'joomla.filesystem.folder' );
+		
+		$document = JFactory::getDocument();
+		$document->addStyleSheet('../libraries/motif/elements/motif.css');
+
+				
+/*		
+		$name = $this->name;
+		$value = $this->value;
+		$id = $this->id;
 		
 		$value = str_replace('\\', '', $value); // Removes the "\" that the param system adds to the string
 		// parse the parameter value into an array of arrays
@@ -34,29 +36,23 @@ class JElementMotif extends JElement
 			$themevalues[$themearray[0]] = explode(',', $themearray[1]);
 		}
 
-		$document =& JFactory::getDocument();
+		$document = JFactory::getDocument();
 	
-		$themeparameters = '<input type="hidden" id="'.$control_name.$name.'" name="'.$control_name.'['.$name.']" value="'.$value.'" />';
+		$themeparameters = '<input type="hidden" id="'.$id.'" name="'.$name.']" value="'.$value.'" />';
 
 		$cid = JRequest::getVar('cid');
-		$this->_templateName = $cid[0];
+		$this->_templateName = $this->form->data->data->template;
 		
-		$this->_themesPath = str_replace('plugins'.DS.'system'.DS.'motif'.DS.'elements', 'templates'.DS.$this->_templateName.DS.'themes', dirname(__FILE__));
+		$this->_themesPath = str_replace('libraries'.DS.'motif'.DS.'elements', 'templates'.DS.$this->_templateName.DS.'themes', dirname(__FILE__));
 		$this->_themes = JFolder::folders($this->_themesPath, '.', false, false);
 		$this->_templatePath = str_replace(DS.'themes', '', $this->_themesPath);
 		
-		$this->_themesURL = '../'.str_replace(DS, '/', str_replace(str_replace('administrator', '', JPATH_BASE), '', dirname(__FILE__)));
+		$this->_themesURL = '../libraries/motif/elements';
 
 		$document->addStyleSheet($this->_themesURL.'/motif.css');
 		
 		$configxml = dirname(__FILE__).DS.'config.xml';
 		$templateconfig = dirname(__FILE__).DS.$this->_templateName.'_config.xml';
-		$ini = $this->_templatePath.DS.'params.ini';
-		if (JFile::exists($ini)) {
-			$content = JFile::read($ini);
-		} else {
-			$content = null;
-		}
 		
 		if(JFile::exists($configxml)) {
 			if(!JFile::exists($templateconfig)) {
@@ -65,12 +61,13 @@ class JElementMotif extends JElement
 				$configcontent = str_replace('TEMPLATE_NAME', $this->_templateName, $configcontent);
 				JFile::write($templateconfig, $configcontent);
 			}
+
 			$params = new JParameter($content, $templateconfig);
 			$themeparameters .= '<h2>Template Parameters</h2>';
 			$themeparameters .= $params->render();
 		}
 		
-		$themeparameters .= '<h2>Theme-specific Parameters and Theme Menu Assignment</h2>';
+		$themeparameters .= '<h2>Theme-specific Parameters</h2>';
 		if ($this->_themes)
 		{
 			$themeparameters .= '<div id="accordion">';
@@ -110,113 +107,15 @@ class JElementMotif extends JElement
 		{
 			$themeparameters .= '<p><em>No themes available to assign to menu items.</em></p>';
 		}
-		
+*/		
 		$baseurl = JURI::base();
-		$themeparameters .= '<div style="text-align: center; padding: 20px 0;"><a href="http://themeables.com" target="_blank" style="outline: none;"><img src="'.str_replace('administrator', '', $baseurl).'plugins/system/motif/elements/logo.gif" border="0" width="238" height="169" alt="Themeables | Themeable Templates for Joomla | Powered by /motif" /></a></div>';
+		$themeparameters .= '<div style="text-align: center; padding: 20px 0;"><a href="http://themeables.com" target="_blank" style="outline: none;"><img src="'.str_replace('administrator', '', $baseurl).'libraries/motif/elements/logo.gif" border="0" width="238" height="169" style="float: none;" alt="Themeables | Themeable Templates for Joomla | Powered by /motif" /></a></div>';
 		
 		
-		$document->addScriptDeclaration($this->_Scripts());
+		// $document->addScriptDeclaration($this->_Scripts());
 		
 		return $themeparameters;
-		
-	}
-	
-	function _getMenuList($name, $value, &$node)
-	{
-		$db =& JFactory::getDBO();
 
-		$menuType = $this->_parent->get('menu_type');
-		if (!empty($menuType)) {
-			$where = ' WHERE menutype = '.$db->Quote($menuType);
-		} else {
-			$where = ' WHERE 1';
-		}
-
-		// load the list of menu types
-		// TODO: move query to model
-		$query = 'SELECT menutype, title' .
-				' FROM #__menu_types' .
-				' ORDER BY title';
-		$db->setQuery( $query );
-		$menuTypes = $db->loadObjectList();
-
-		if ($state = $node->attributes('state')) {
-			$where .= ' AND published = '.(int) $state;
-		}
-
-		// load the list of menu items
-		// TODO: move query to model
-		$query = 'SELECT id, parent, name, menutype, type' .
-				' FROM #__menu' .
-				$where .
-				' ORDER BY menutype, parent, ordering'
-				;
-
-		$db->setQuery($query);
-		$menuItems = $db->loadObjectList();
-
-		// establish the hierarchy of the menu
-		// TODO: use node model
-		$children = array();
-
-		if ($menuItems)
-		{
-			// first pass - collect children
-			foreach ($menuItems as $v)
-			{
-				$pt 	= $v->parent;
-				$list 	= @$children[$pt] ? $children[$pt] : array();
-				array_push( $list, $v );
-				$children[$pt] = $list;
-			}
-		}
-
-		// second pass - get an indent list of the items
-		$list = JHTML::_('menu.treerecurse', 0, '', array(), $children, 9999, 0, 0 );
-
-		// assemble into menutype groups
-		$n = count( $list );
-		$groupedList = array();
-		foreach ($list as $k => $v) {
-			$groupedList[$v->menutype][] = &$list[$k];
-		}
-
-		// assemble menu items to the array
-		$options 	= array();
-		$options[]	= JHTML::_('select.option', '', '- '.JText::_('Select Item').' -');
-
-		foreach ($menuTypes as $type)
-		{
-			if ($menuType == '')
-			{
-				$options[]	= JHTML::_('select.option',  '0', '&nbsp;', 'value', 'text', true);
-				$options[]	= JHTML::_('select.option',  $type->menutype, $type->title . ' - ' . JText::_( 'Top' ), 'value', 'text', true );
-			}
-			if (isset( $groupedList[$type->menutype] ))
-			{
-				$n = count( $groupedList[$type->menutype] );
-				for ($i = 0; $i < $n; $i++)
-				{
-					$item = &$groupedList[$type->menutype][$i];
-					
-					//If menutype is changed but item is not saved yet, use the new type in the list
-					if ( JRequest::getString('option', '', 'get') == 'com_menus' ) {
-						$currentItemArray = JRequest::getVar('cid', array(0), '', 'array');
-						$currentItemId = (int) $currentItemArray[0];
-						$currentItemType = JRequest::getString('type', $item->type, 'get');
-						if ( $currentItemId == $item->id && $currentItemType != $item->type) {
-							$item->type = $currentItemType;
-						}
-					}
-					
-					$disable = strpos($node->attributes('disable'), $item->type) !== false ? true : false;
-					$options[] = JHTML::_('select.option',  $item->id, '&nbsp;&nbsp;&nbsp;' .$item->treename, 'value', 'text', $disable );
-
-				}
-			}
-		}
-
-		return JHTML::_('select.genericlist',  $options, 'theme'.$name, 'class="inputbox" multiple onchange="changeValue()"', 'value', 'text', $value, 'list'.$name);
 	}
 	
 	function _Scripts()
