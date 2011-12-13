@@ -57,7 +57,7 @@ class Motif extends JObject
 		$this->_debug = $this->getParameter('debug') && JRequest::getVar('debug', 0);
 		$this->_plugins = $this->getParameter('plugins');
 		$this->files = new MotifFiles($this->_doc, $this->_browser, $this->_context, $this->_usethemes, $this->_theme, $this->_coretheme, $this->_debug);
-		$this->compileLess();
+		if ($this->getParameter('mode') == 'development') $this->compileLess();
 		
 		$this->triggerEvent('onAfterMotifLoad', array(&$this));
 	}
@@ -349,7 +349,7 @@ class Motif extends JObject
 
 	function loadModuleChrome()
 	{
-		if($this->_themes) $this->files->getFile('html'.DS.'modules.php');
+		if($this->_usethemes) $this->files->getFile('html'.DS.'modules.php');
 	}
 	
 	function getMotifFiles()
