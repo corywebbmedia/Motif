@@ -37,15 +37,17 @@ class Motif extends JObject
 	var $_plugins				= 0;
 	var $files					= null;
 
-	function __construct( &$document, $context, $usethemes=1 )
+	function __construct( $usethemes=1 )
 	{
 		$mainframe = JFactory::getApplication();
 		$menu = $mainframe->getMenu();
 		if ($context == 'index' || $context == 'component') JPluginHelper::importPlugin('motif');
 		
-		$this->_doc = $document;
+		$this->_doc = JFactory::getDocument();
 		$this->_browser = $this->getBrowser();
-		$this->_context = $context;
+		$this->_context = JRequest::getVar('tmpl', '') == 'component' ? 'component' : 'index';
+		$user = JFactory::getUser();
+		if($mainframe->getCfg('offline') && !$user->authorise('core.login.offline')) $this->_context = 'offline';
 		$this->_usethemes = $usethemes;
 		$this->_themespath = JPATH_THEMES.DS.$this->_doc->template.DS.'themes';
 		$this->_activeItem = $menu->getActive();
@@ -62,13 +64,13 @@ class Motif extends JObject
 		$this->triggerEvent('onAfterMotifLoad', array(&$this));
 	}
 	
-	function getInstance( &$document, $context, $usethemes=1 )
+	function getInstance( $usethemes=1 )
 	{
 		static $instance;
 		
 		if(!is_object($instance))
 		{
-			$instance = new Motif($document, $context, $usethemes);
+			$instance = new Motif($usethemes);
 		}
 		
 		return $instance;
