@@ -61,6 +61,18 @@ class Motif extends JObject
 		
 		$this->triggerEvent('onAfterMotifLoad', array(&$this));
 	}
+	
+	function getInstance( &$document, $context, $usethemes=1 )
+	{
+		static $instance;
+		
+		if(!is_object($instance))
+		{
+			$instance = new Motif($document, $context, $usethemes);
+		}
+		
+		return $instance;
+	}
 
 	function _setCore()
 	{
