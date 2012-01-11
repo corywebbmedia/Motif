@@ -13,14 +13,14 @@ defined('_JEXEC') or die('Restricted access');
 /* A shortcut for $this->countModules($position) */
 function cm( $positions )
 {
-	global $motif;
+	$motif = Motif::getInstance();
 	return $motif->countModules( $positions );
 }
 
 /* Returns a 1 if the position has modules or a 0 if the position does not have modules. */
 function hasModules( $positions )
 {
-	global $motif;
+	$motif = Motif::getInstance();
 	return $motif->hasModules( $positions );
 }
 
@@ -28,54 +28,54 @@ function hasModules( $positions )
 The function determines whether or not the position has modules before loading preHtml and postHtml. */
 function modules( $name, $style='raw', $preHtml='', $postHtml='', $attribs=array() )
 {
-	global $motif;
+	$motif = Motif::getInstance();
 	$motif->loadModules( $name, $style, $preHtml, $postHtml, $attribs );
 }
 function modulePosition( $position )
 {
-	global $motif;
+	$motif = Motif::getInstance();
 	$motif->loadModulePosition( $position );
 }
 /* Loads a single module. */
 function module( $module, $preHtml='', $postHtml='', $params=array() )
 {
-	global $motif;
+	$motif = Motif::getInstance();
 	$motif->loadModule( $module, $preHtml, $postHtml, $params );
 }
 function position( $name, $style='', $preHtml='', $postHtml='', $attribs=array() )
 {
-	global $motif;
+	$motif = Motif::getInstance();
 	return $motif->getPosition( $name, $style, $preHtml, $postHtml, $attribs );
 }
 function positions( $positions, $style='none' )
 {
-	global $motif;
+	$motif = Motif::getInstance();
 	$motif->loadPositions( $positions, $style );
 }
 /* Setting $style in the modules function is optional and defaults to "raw". You can override the default with this function. */
 function setDefaultModuleStyle( $style )
 {
-	global $motif;
+	$motif = Motif::getInstance();
 	$motif->setDefaultModuleStyle( $style );
 }
 
 /* Loads the component with HTML before and after the component. */
 function component( $preHtml = '', $postHtml = '' )
 {
-	global $motif;
+	$motif = Motif::getInstance();
 	$motif->loadComponent( $preHtml, $postHtml );
 }
 
 /* Determines if there is a message in the buffer. */
 function hasMessage()
 {
-	global $motif;
+	$motif = Motif::getInstance();
 	return $motif->hasMessage();
 }
 /* Loads the message with preHtml and postHtml if there is a message in the buffer. Makes the hasMessage function mostly unnecessary. */
 function message( $preHtml = '', $postHtml = '' )
 {
-	global $motif;
+	$motif = Motif::getInstance();
 	$motif->loadMessage($preHtml, $postHtml);
 }
 
@@ -83,7 +83,7 @@ function message( $preHtml = '', $postHtml = '' )
 The function will search the default them and the core theme to see if the file exists. */
 function getFile( $filename )
 {
-	global $motif;
+	$motif = Motif::getInstance();
 	$files = $motif->getMotifFiles();
 	$files->getFile( $filename );
 }
@@ -96,7 +96,7 @@ function getSidebar( $name = '' )
 /* Returns true if the user is currently on the home page, false if not. */
 function isHome()
 {
-	global $motif;
+	$motif = Motif::getInstance();
 	return $motif->isHome();
 }
 /* Loads the search module. */
@@ -107,19 +107,19 @@ function getSearchForm( $preHtml='', $postHtml='', $params=array() )
 /* Returns true if hte user is logged in, false if not */
 function isUserLoggedIn()
 {
-	global $motif;
+	$motif = Motif::getInstance();
 	return $motif->isUserLoggedIn();
 }
 /* Returns the name of the site as set in the global configuraiton. */
 function getSiteName()
 {
-	global $motif;
+	$motif = Motif::getInstance();
 	return $motif->getSiteName();
 }
 /* Returns the page title */
 function getPageTitle()
 {
-	global $motif;
+	$motif = Motif::getInstance();
 	return $motif->getPageTitle();
 }
 /* Returns the location of an image. Do not include the extension in $imagename.
@@ -128,7 +128,7 @@ It first searches in themes/DEFAULT_THEME/images/ for the existance of the image
 If it is not there, it searches themes/core/images. If it's not there, it returns a null value. */
 function getImage( $imagename, $extension = 'any' )
 {
-	global $motif;
+	$motif = Motif::getInstance();
 	$files = $motif->getMotifFiles();
 	return $files->getImage( $imagename, $extension );
 }
@@ -139,19 +139,19 @@ function getLogo()
 /* Returns a link to the homg page of the site. */
 function getHomeLink()
 {
-	global $motif;
+	$motif = Motif::getInstance();
 	return $motif->getHomeLink();
 }
 /* Loads a template parameter. */
 function getParameter( $name )
 {
-	global $motif;
+	$motif = Motif::getInstance();
 	return $motif->getParameter( $name );
 }
 /* Returns the JBrowser object with the user's browser info. */
 function getBrowser()
 {
-	global $motif;
+	$motif = Motif::getInstance();
 	return $motif->getBrowser();
 }
 
