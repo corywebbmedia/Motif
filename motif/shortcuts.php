@@ -176,6 +176,13 @@ function is_home()
 {
 	return isHome();
 }
+
+/* Returns true if on home page, false if not */
+function is_front_page()
+{
+	return isHome();
+}
+
 /* Includes sidebar.php */
 function get_sidebar( $name='' )
 {
