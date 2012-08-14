@@ -31,21 +31,21 @@ class MotifFiles extends JObject
 	function __construct( &$document, $browser, $context='index', $themes=true, $theme='core', $coretheme='core', $debug=0 )
 	{
 		$mainframe = JFactory::getApplication();
-		
+
 		$this->_doc			= $document;
 		$this->_browser		= $browser;
 		$this->_context		= $context;
 		$this->_themes		= $themes;
 		$this->_theme		= $theme;
 		$this->_coretheme	= $coretheme;
-		$this->path		= JPATH_THEMES.DS.$this->_doc->template;
+		$this->path			= JPATH_THEMES.DS.$this->_doc->template;
 		$this->paths		= $this->_getPaths();
 		$this->url			= $this->_doc->baseurl.'/templates/'.$this->_doc->template;
-		$this->urls		= $this->_getUrls();
+		$this->urls			= $this->_getUrls();
 		$this->_debug		= $debug;
 
 	}
-	
+
 	// Get 3 paths: theme, core, and template
 	function _getPaths()
 	{
@@ -58,7 +58,7 @@ class MotifFiles extends JObject
 		$paths['template'] = $this->path;
 		return $paths;
 	}
-	
+
 	// Get 3 URLs: theme, core and template
 	function _getUrls()
 	{
@@ -95,14 +95,14 @@ class MotifFiles extends JObject
 		}
 		return '';
 	}
-	
+
 	// Get CSS, JS or less files
 	function getFiles($ext)
 	{
 		$files = array();
 		$returnfiles = array();
 		$ext_folder = ($ext == 'less' ? 'css' : $ext);
-		
+
 		if($this->paths && count($this->paths))
 		{
 			// STEP 1: Get all files with extension $ext from each path - template, theme, and core theme
@@ -119,7 +119,7 @@ class MotifFiles extends JObject
 						$files[$key] = JFolder::files($path.DS.$ext_folder, '.'.$ext.'$', false, false);
 				}
 			}
-			
+
 			// STEP 2: Loop through all of the files from step 1, and remove overridden files. Theme > Core Theme > Template
 			if($ext == 'less')
 			{
@@ -149,8 +149,8 @@ class MotifFiles extends JObject
 						}
 					}
 				}
-				
-				
+
+
 				// STEP 3: Add browser-specific files to the array if they match the current browser.
 				if ( count($browserfiles) )
 				{
@@ -164,7 +164,7 @@ class MotifFiles extends JObject
 		return $returnfiles;
 
 	}
-	
+
 	function _browserMatch( $filename, $ext )
 	{
 		if (strpos($filename, 'browser_ie') === 0) // file name starts with 'browser_ie'
@@ -176,14 +176,14 @@ class MotifFiles extends JObject
 		}
 		return true;
 	}
-	
+
 	function getImage( $name, $ext = 'any' )
 	{
 		if (isset($this->images[$name]) && $this->images[$name] != '') return $this->images[$name];
-		
+
 		if (substr($ext, 0, 1) == '.') $ext = substr($ext, 1, strlen($ext)-1);
 		$exts = array('gif', 'jpg', 'png');
-		
+
 		foreach($this->paths as $key=>$path)
 		{
 			$ImagesPath = $path.DS.'images'.DS;
@@ -197,15 +197,15 @@ class MotifFiles extends JObject
 				}
 			}
 		}
-		
+
 		return '';
 	}
-	
+
 	function setImage( $name, $location )
 	{
 		$this->images[$name] = $location;
 	}
-	
+
 	function getFile( $name, $ignoredebug = 0 )
 	{
 		$loadfile = '';
@@ -220,7 +220,7 @@ class MotifFiles extends JObject
 				}
 			}
 		}
-		
+
 		if ($loadfile != '') {
 			if ($this->_debug && !$ignoredebug) echo '<div class="outlinefile"><h3 class="outlinelabel">'.$loadfile.'</h3><div class="outlineoverlay"></div>';
 			require_once($loadfile);
