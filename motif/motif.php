@@ -41,7 +41,7 @@ class Motif extends JObject
 	{
 		$mainframe = JFactory::getApplication();
 		$menu = $mainframe->getMenu();
-		if ($context == 'index' || $context == 'component') JPluginHelper::importPlugin('motif');
+		JPluginHelper::importPlugin('motif');
 		
 		$this->_doc = JFactory::getDocument();
 		$this->_browser = $this->getBrowser();
