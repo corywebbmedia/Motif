@@ -384,7 +384,7 @@ class Motif extends JObject
 		{
 			foreach($lessfiles as $lessfile)
 			{
-				$less->ccompile($lessfile, str_replace('.less', '.css', $lessfile));
+				$less->checkedCompile($lessfile, str_replace('.less', '.css', $lessfile));
 			}
 		}
 	}
