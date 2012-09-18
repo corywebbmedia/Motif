@@ -35,6 +35,7 @@ class Motif extends JObject
 	var $_debug					= 0;
 	var $_bodyClass				= '';
 	var $_plugins				= 0;
+	var $_lessFormatter			= 'lessjs'; // DEFAULT VALUE
 	var $files					= null;
 
 	function __construct( $usethemes=1 )
@@ -58,6 +59,8 @@ class Motif extends JObject
 		$this->_images = array();
 		$this->_debug = $this->getParameter('debug') && JRequest::getVar('debug', 0);
 		$this->_plugins = $this->getParameter('plugins');
+		$this->_lessFormatter = $this->getParameter('lessformatter');
+		if(!$this->_lessFormatter || $this->_lessFormatter == '') $this->_lessFormatter = 'lessjs';
 		$this->files = new MotifFiles($this->_doc, $this->_browser, $this->_context, $this->_usethemes, $this->_theme, $this->_coretheme, $this->_debug);
 		if ($this->getParameter('mode') == 'development') $this->compileLess();
 		
@@ -374,12 +377,14 @@ class Motif extends JObject
 	function compileLess($files=null)
 	{
 		$lessfiles = $files ? $files : $this->files->get('less');
+		$less = new lessc;
+		$less->setFormatter($this->_lessFormatter);
 		
 		if($lessfiles && count($lessfiles))
 		{
 			foreach($lessfiles as $lessfile)
 			{
-				lessc::ccompile($lessfile, str_replace('.less', '.css', $lessfile));
+				$less->ccompile($lessfile, str_replace('.less', '.css', $lessfile));
 			}
 		}
 	}
