@@ -154,7 +154,7 @@ class MotifFiles extends JObject
 				// STEP 3: Add browser-specific files to the array if they match the current browser.
 				if ( count($browserfiles) )
 				{
-					foreach($broserfiles as $browserfile)
+					foreach($browserfiles as $browserfile)
 					{
 						$returnfiles[] = $browserfile;
 					}
