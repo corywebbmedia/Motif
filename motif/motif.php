@@ -50,7 +50,7 @@ class Motif extends JObject
 		$user = JFactory::getUser();
 		if($mainframe->getCfg('offline') && !$user->authorise('core.login.offline')) $this->_context = 'offline';
 		$this->_usethemes = $usethemes;
-		$this->_themespath = JPATH_THEMES.DS.$this->_doc->template.DS.'themes';
+		$this->_themespath = JPATH_THEMES.'/'.$this->_doc->template.'/themes';
 		$this->_activeItem = $menu->getActive();
 		$this->_setCore();
 		$this->_getTheme();
@@ -67,7 +67,7 @@ class Motif extends JObject
 		$this->triggerEvent('onAfterMotifLoad', array(&$this));
 	}
 	
-	function getInstance( $usethemes=1 )
+	public static function getInstance( $usethemes=1 )
 	{
 		static $instance;
 		
@@ -81,7 +81,7 @@ class Motif extends JObject
 
 	function _setCore()
 	{
-		if ($this->_browser->isMobile() && JFolder::exists($this->_themespath.DS.'mobilecore')) $this->_coretheme = 'mobilecore';
+		if ($this->_browser->isMobile() && JFolder::exists($this->_themespath.'/mobilecore')) $this->_coretheme = 'mobilecore';
 	}
 	
 	function _getTheme()
@@ -130,7 +130,7 @@ class Motif extends JObject
 		echo '<body class="'.$this->getBodyClass().'">'."\n";
 
 		$this->triggerEvent('onBeforeInclude', array(&$this, 'index.php'));
-		require_once(JPATH_THEMES.DS.$this->_doc->template.DS.'themes'.DS.$this->getIndex());
+		require_once(JPATH_THEMES.'/'.$this->_doc->template.'/themes/'.$this->getIndex());
 		$this->triggerEvent('onAfterInclude', array(&$this, 'index.php'));
 		
 		if ($this->_context == 'index') $this->loadModules('debug'); // Load the debug module position automatically
@@ -158,16 +158,16 @@ class Motif extends JObject
 	function getThemeName()
 	{
 		$filename = $this->_context.'.php';
-		return (JFile::exists($this->_themespath.DS.$this->_theme.DS.$filename) ? $this->_theme : $this->_coretheme);
+		return (JFile::exists($this->_themespath.'/'.$this->_theme.'/'.$filename) ? $this->_theme : $this->_coretheme);
 	}
 	
 	function getIndex()
 	{
-		if ($this->_context != 'index') return $this->getThemeName().DS.$this->_context.'.php';
-		$index = $this->getThemeName().DS.'index.php';
+		if ($this->_context != 'index') return $this->getThemeName().'/'.$this->_context.'.php';
+		$index = $this->getThemeName().'/index.php';
 		if ($this->isHome()) {
-			if (JFile::exists($this->_themespath.DS.$this->_coretheme.DS.'home.php')) $index = $this->_coretheme.DS.'home.php';
-			if ($this->_theme != $this->_coretheme && JFile::exists($this->_themespath.DS.$this->_theme.DS.'home.php')) $index = $this->_theme.DS.'home.php';
+			if (JFile::exists($this->_themespath.'/'.$this->_coretheme.'/home.php')) $index = $this->_coretheme.'/home.php';
+			if ($this->_theme != $this->_coretheme && JFile::exists($this->_themespath.'/'.$this->_theme.'/home.php')) $index = $this->_theme.'/home.php';
 		}
 		return $index;
 	}
@@ -184,6 +184,7 @@ class Motif extends JObject
 								. ($this->isHome() ? ' onhome' : ' notonhome')
 								. ' option'.str_replace('com_', '', JRequest::getVar('option', 'notdefined'))
 								. ' view'.JRequest::getVar('view', 'notdefined')
+								. ' '.$this->_activeItem->params->get('pageclass_sfx')
 								);
 								
 		return $this->_bodyClass;
@@ -236,9 +237,9 @@ class Motif extends JObject
 		$mainframe = JFactory::getApplication();
 		if ($this->_plugins) $mainframe->triggerEvent( 'onBeforeLoadModulePosition', array( &$this, &$name, &$style, &$preHtml, &$postHtml, &$attribs ) );
 		if ($style == '') $style = $this->_defaultModuleStyle;
-		if(JFile::exists(JPATH_THEMES.DS.$this->_doc->template.DS.'html'.DS.'modules.php'))
+		if(JFile::exists(JPATH_THEMES.'/'.$this->_doc->template.'/html/modules.php'))
 		{
-			require_once(JPATH_THEMES.DS.$this->_doc->template.DS.'html'.DS.'modules.php');
+			require_once(JPATH_THEMES.'/'.$this->_doc->template.'/html/modules.php');
 			if ($style == 'xhtml' && function_exists('modChrome_motifxhtml')) $style = 'motifxhtml';
 			if ($style == 'rounded' && function_exists('modChrome_motifrounded')) $style = 'motifrounded';
 		}
@@ -278,9 +279,9 @@ class Motif extends JObject
 			if (!isset($position['postHTML'])) $position['postHTML'] = '';
 			if (!isset($position['attribs'])) $position['style'] = '';
 		}
-		require_once (JPATH_BASE.DS.'templates'.DS.$this->_doc->template.DS.'html'.DS.'positions.php');
-		if(JFile::exists(JPATH_BASE.DS.'templates'.DS.$this->_doc->template.DS.$this->_theme.DS.'html'.DS.'positions.php'))
-			require_once(JPATH_BASE.DS.'templates'.DS.$this->_doc->template.DS.$this->_theme.DS.'html'.DS.'positions.php');
+		require_once (JPATH_BASE.'/templates/'.$this->_doc->template.'/html'.'/positions.php');
+		if(JFile::exists(JPATH_BASE.'/templates/'.$this->_doc->template.'/'.$this->_theme.'/html'.'/positions.php'))
+			require_once(JPATH_BASE.'/templates/'.$this->_doc->template.'/'.$this->_theme.'/html'.'/positions.php');
 		$positionsfunction = 'positions_'.$style;
 		if(function_exists($positionsfunction))
 		{
@@ -329,7 +330,7 @@ class Motif extends JObject
 	
 	function getSiteName()
 	{
-		return $this->_cfg->getValue( 'config.sitename' );
+		return $this->_cfg->get( 'config.sitename' );
 	}
 	
 	function getPageTitle()
@@ -366,7 +367,7 @@ class Motif extends JObject
 
 	function loadModuleChrome()
 	{
-		if($this->_usethemes) $this->files->getFile('html'.DS.'modules.php');
+		if($this->_usethemes) $this->files->getFile('html'.'/modules.php');
 	}
 	
 	function getMotifFiles()

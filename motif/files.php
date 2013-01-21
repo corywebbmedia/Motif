@@ -38,7 +38,7 @@ class MotifFiles extends JObject
 		$this->_themes		= $themes;
 		$this->_theme		= $theme;
 		$this->_coretheme	= $coretheme;
-		$this->path			= JPATH_THEMES.DS.$this->_doc->template;
+		$this->path			= JPATH_THEMES.'/'.$this->_doc->template;
 		$this->paths		= $this->_getPaths();
 		$this->url			= $this->_doc->baseurl.'/templates/'.$this->_doc->template;
 		$this->urls			= $this->_getUrls();
@@ -52,8 +52,8 @@ class MotifFiles extends JObject
 		$paths = array();
 		if($this->_themes)
 		{
-			$paths['theme'] = $this->path.DS.'themes'.DS.$this->_theme;
-			if($this->_theme != $this->_coretheme) $paths['core'] = $this->path.DS.'themes'.DS.$this->_coretheme;
+			$paths['theme'] = $this->path.'/themes/'.$this->_theme;
+			if($this->_theme != $this->_coretheme) $paths['core'] = $this->path.'/themes/'.$this->_coretheme;
 		}
 		$paths['template'] = $this->path;
 		return $paths;
@@ -108,15 +108,15 @@ class MotifFiles extends JObject
 			// STEP 1: Get all files with extension $ext from each path - template, theme, and core theme
 			foreach($this->paths as $key => $path) {
 				$files[$key] = array();
-				if (JFile::exists($path.DS.$ext_folder.DS.'order.php'))
+				if (JFile::exists($path.'/'.$ext_folder.'/order.php'))
 				{
-					include($path.DS.$ext_folder.DS.'order.php');
+					include($path.'/'.$ext_folder.'/order.php');
 					$files[$key] = $ordered;
 				}
 				else
 				{
-					if (JFolder::exists($path.DS.$ext_folder))
-						$files[$key] = JFolder::files($path.DS.$ext_folder, '.'.$ext.'$', false, false);
+					if (JFolder::exists($path.'/'.$ext_folder))
+						$files[$key] = JFolder::files($path.'/'.$ext_folder, '.'.$ext.'$', false, false);
 				}
 			}
 
@@ -127,7 +127,7 @@ class MotifFiles extends JObject
 				{
 					foreach($pathfiles as $file)
 					{
-						$returnfiles[] = $this->paths[$key].DS.'css'.DS.JFile::getName($file);
+						$returnfiles[] = $this->paths[$key].'/css/'.JFile::getName($file);
 					}
 				}
 			}
@@ -154,7 +154,7 @@ class MotifFiles extends JObject
 				// STEP 3: Add browser-specific files to the array if they match the current browser.
 				if ( count($browserfiles) )
 				{
-					foreach($browserfiles as $browserfile)
+					foreach($broserfiles as $browserfile)
 					{
 						$returnfiles[] = $browserfile;
 					}
@@ -186,7 +186,7 @@ class MotifFiles extends JObject
 
 		foreach($this->paths as $key=>$path)
 		{
-			$ImagesPath = $path.DS.'images'.DS;
+			$ImagesPath = $path.'/images/';
 			$Images = $this->urls[$key].'/images/';
 			foreach($exts as $myext)
 			{
@@ -213,9 +213,9 @@ class MotifFiles extends JObject
 		{
 			foreach($this->paths as $path)
 			{
-				if (JFile::exists($path.DS.$name))
+				if (JFile::exists($path.'/'.$name))
 				{
-					$loadfile = $path.DS.$name;
+					$loadfile = $path.'/'.$name;
 					break;
 				}
 			}
