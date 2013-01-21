@@ -1,7 +1,12 @@
+/cms
+/cms.php
+/compat
+/import.legacy.php
 /import.php
 /index.html
 /joomla
 /joomlacms
+/legacy
 /loader.php
 /phpmailer
 /phputf8
