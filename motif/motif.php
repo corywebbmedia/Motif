@@ -198,23 +198,29 @@ class Motif extends JObject
 	
 	function loadModules( $name, $style='', $preHtml='', $postHtml='', $attribs=array() )
 	{
-		$mainframe = JFactory::getApplication();
-		if ($style == '') $style = $this->defaultModuleStyle;
-		if(JFile::exists(JPATH_THEMES.'/'.$this->doc->template.'/html/modules.php'))
-		{
-			require_once(JPATH_THEMES.'/'.$this->doc->template.'/html/modules.php');
-			if ($style == 'xhtml' && function_exists('modChrome_motifxhtml')) $style = 'motifxhtml';
-			if ($style == 'rounded' && function_exists('modChrome_motifrounded')) $style = 'motifrounded';
+		$modules = JModuleHelper::getModules($name);
+		if(count($modules)) {
+			if ($style == '') $style = $this->defaultModuleStyle;
+			if(JFile::exists(JPATH_THEMES.'/'.$this->doc->template.'/html/modules.php'))
+			{
+				require_once(JPATH_THEMES.'/'.$this->doc->template.'/html/modules.php');
+				if ($style == 'xhtml' && function_exists('modChrome_motifxhtml')) $style = 'motifxhtml';
+				if ($style == 'rounded' && function_exists('modChrome_motifrounded')) $style = 'motifrounded';
+			}
+			$params = array( 'style' => $style );
+			if($attribs && count($attribs)) {
+				foreach($attribs as $key=>$attrib) {
+					$params[$key] = $attrib;
+				}
+			}
+			
+			echo $preHtml;
+			foreach($modules as $module) {
+				echo JModuleHelper::renderModule($module, $params);
+			}
+			echo $postHtml;
 		}
-		if ($this->countModules($name))
-		{
-			$renderer	= $this->doc->loadRenderer('modules');
-			$params		= array('style'=>$style);
 
-			foreach($attribs as $key=>$attrib) $params[$key] = $attrib;
-
-			echo $preHtml.$renderer->render( $name, $params ).$postHtml;
-		}
 	}
 	
 	function loadModulePosition( $position )
