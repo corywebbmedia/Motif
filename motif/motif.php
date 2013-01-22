@@ -125,7 +125,7 @@ class Motif extends JObject
 	}
 	function _loadFiles($ext, $filenames = array())
 	{	
-		$files = $this->files->get($ext, $filenames);
+		$files = $this->files->getFiles($ext, $filenames);
 
 		$fileload['css'][] = '<link rel="stylesheet" type="text/css" href="';
 		$fileload['css'][] = '" />';

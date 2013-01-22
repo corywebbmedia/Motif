@@ -91,11 +91,18 @@ class MotifFiles extends JObject
 
 		if($this->paths && count($this->paths))
 		{
-			// STEP 1: Get all files with extension $ext from each path - template, theme, and core theme
+			// STEP 1: Get files from each path - template and theme
 			foreach($this->paths as $key => $path) {
 				$files[$key] = array();
-				if (JFolder::exists($path.'/'.$ext_folder))
-					$files[$key] = JFolder::files($path.'/'.$ext_folder, '.'.$ext.'$', false, false);
+				if(!$files_list) {
+					if (JFolder::exists($path.'/'.$ext_folder))
+						$files[$key] = JFolder::files($path.'/'.$ext_folder, '.'.$ext.'$', false, false);
+				} else {
+					foreach($files_list as $file) {
+						if(JFile::exists($path.'/'.$ext_folder.'/'.$file))
+							$files[$key][] = $path.'/'.$ext_folder.'/'.$file;
+					}
+				}
 			}
 
 			// STEP 2: Loop through all of the files from step 1, and remove overridden files. Theme > Template
