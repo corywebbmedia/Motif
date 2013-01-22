@@ -1,6 +1,6 @@
 <?php
 /**
-* Copyright:	Copyright (C) 2010 Cory Webb Media, LLC. All rights reserved.
+* Copyright:	Copyright (C) 2013, Manos. All rights reserved.
 * License:	GNU/GPL
 * Motif is free software. This version may have been modified pursuant
 * to the GNU General Public License, and as distributed it includes or
@@ -13,58 +13,58 @@ defined('_JEXEC') or die('Restricted access');
 jimport( 'joomla.html.parameter' );
 jimport( 'joomla.filesystem.file' );
 jimport( 'joomla.filesystem.folder' );
+jimport( 'joomla.application.module.helper' );
 jimport( 'motif.shortcuts' );
 jimport( 'motif.files' );
 jimport( 'motif.less' );
 
 class Motif extends JObject
 {
-	var $_doc					= null;
-	var $_usethemes				= 1;
-	var $_theme					= 'core';
-	var $_coretheme				= 'core';
-	var $_paths					= array();
-	var $_themespath			= '';
-	var $_defaultModuleStyle	= 'raw';
-	var $_context				= '';
-	var $_activeItem			= null;
-	var $_user					= null;
-	var $_cfg					= null;
-	var $_images				= null;
-	var $_browser				= null;
-	var $_debug					= 0;
-	var $_bodyClass				= '';
-	var $_plugins				= 0;
-	var $_lessFormatter			= 'lessjs'; // DEFAULT VALUE
+	var $doc					= null;
+	var $theme					= '';
+	var $paths					= array();
+	var $themespath				= '';
+	var $defaultModuleStyle		= 'raw';
+	var $context				= '';
+	var $sitename				= '';
+	var $activeItem				= null;
+	var $user					= null;
+	var $cfg					= null;
+	var $images					= null;
+	var $debug					= 0;
+	var $bodyClass				= '';
+	var $plugins				= 0;
+	var $lessFormatter			= 'lessjs';
 	var $files					= null;
 
-	function __construct( $usethemes=1 )
+	function __construct()
 	{
 		$mainframe = JFactory::getApplication();
 		$menu = $mainframe->getMenu();
-		JPluginHelper::importPlugin('motif');
+		$sitename = $mainframe->getCfg('sitename');
 		
-		$this->_doc = JFactory::getDocument();
-		$this->_browser = $this->getBrowser();
-		$this->_context = JRequest::getVar('tmpl', '') == 'component' ? 'component' : 'index';
-		$user = JFactory::getUser();
-		if($mainframe->getCfg('offline') && !$user->authorise('core.login.offline')) $this->_context = 'offline';
-		$this->_usethemes = $usethemes;
-		$this->_themespath = JPATH_THEMES.'/'.$this->_doc->template.'/themes';
-		$this->_activeItem = $menu->getActive();
-		$this->_setCore();
+		$this->doc = JFactory::getDocument();
+		$this->context = JRequest::getVar('tmpl', '') == 'component' ? 'component' : 'index';
+
+		$this->user = JFactory::getUser();
+		if($mainframe->getCfg('offline') && !$user->authorise('core.login.offline')) $this->context = 'offline';
+
+		$this->themespath = JPATH_THEMES.'/'.$this->doc->template.'/themes';
+		$this->activeItem = $menu->getActive();
+
 		$this->_getTheme();
-		$this->_user = JFactory::getUser();
-		$this->_cfg = JFactory::getConfig();
-		$this->_images = array();
-		$this->_debug = $this->getParameter('debug') && JRequest::getVar('debug', 0);
-		$this->_plugins = $this->getParameter('plugins');
-		$this->_lessFormatter = $this->getParameter('lessformatter');
-		if(!$this->_lessFormatter || $this->_lessFormatter == '') $this->_lessFormatter = 'lessjs';
-		$this->files = new MotifFiles($this->_doc, $this->_browser, $this->_context, $this->_usethemes, $this->_theme, $this->_coretheme, $this->_debug);
-		if ($this->getParameter('mode') == 'development') $this->compileLess();
 		
-		$this->triggerEvent('onAfterMotifLoad', array(&$this));
+		$this->cfg = JFactory::getConfig();
+		$this->images = array();
+
+		$this->_debug = $this->getParameter('debug') && JRequest::getVar('debug', 0);
+
+		$this->lessFormatter = $this->getParameter('lessformatter');
+		if(!$this->lessFormatter || $this->lessFormatter == '') $this->lessFormatter = 'lessjs';
+		
+		$this->files = new MotifFiles($this->doc, $this->context, $this->theme, $this->_debug);
+
+		if ($this->getParameter('mode') == 'development') $this->compileLess();
 	}
 	
 	public static function getInstance( $usethemes=1 )
@@ -78,132 +78,51 @@ class Motif extends JObject
 		
 		return $instance;
 	}
-
-	function _setCore()
-	{
-		if ($this->_browser->isMobile() && JFolder::exists($this->_themespath.'/mobilecore')) $this->_coretheme = 'mobilecore';
-	}
-	
+		
 	function _getTheme()
 	{
-		$this->_theme = ($this->getParameter('theme') ? $this->getParameter('theme') : $this->_coretheme);
-
-		$this->getBrowser();
-		if ($this->_browser->isMobile() && $this->getParameter('theme_mobile') != $this->_coretheme) $this->_theme = $this->getParameter('theme_mobile');
+		$this->theme = ($this->getParameter('theme') ? $this->getParameter('theme') : '');
 		
-		if (JRequest::getVar('theme', 0) && $this->getParameter('manual_theme')) $this->_theme = JRequest::getVar('theme');
+		if (JRequest::getVar('theme', 0) && $this->getParameter('manualtheme')) $this->theme = JRequest::getVar('theme');
 		
 	}
 	function setTheme( $theme )
 	{
-		$this->_theme = (JRequest::getVar('theme', 0) && $this->getParameter('manual_theme')) ? JRequest::getVar('theme') : $this->_theme = $theme;
+		$this->theme = (JRequest::getVar('theme', 0) && $this->getParameter('manualtheme')) ? JRequest::getVar('theme') : $theme;
 	}
 	
 	function load()
 	{
 		$mainframe = JFactory::getApplication();
 
-		switch ($this->getParameter('doctype'))
-		{
-			case 'html 5':
-				echo '<!DOCTYPE HTML>'."\n";
-				echo '<html lang="'.$this->_doc->language.'">'."\n";
-				break;
-			case 'xhtml strict':
-				echo '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">'."\n";
-				echo '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="'.$this->_doc->language.'" lang="'.$this->_doc->language.'" dir="'.$this->_doc->direction.'">'."\n";
-				break;
-			case 'xhtml 1.1':
-				echo '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">'."\n";
-				echo '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="'.$this->_doc->language.'" lang="'.$this->_doc->language.'" dir="'.$this->_doc->direction.'">'."\n";
-				break;
-			case 'xhtml transitional':
-			default: // XHTML Transitional
-				echo '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">'."\n";
-				echo '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="'.$this->_doc->language.'" lang="'.$this->_doc->language.'" dir="'.$this->_doc->direction.'">'."\n";
-				break;
-		}
-		echo "<head>\n";
-		echo '<meta http-equiv="content-type" content="text/html; charset=utf-8" />'."\n";
-		echo $this->loadHead()."\n";
-		echo "</head>\n";
-		echo '<body class="'.$this->getBodyClass().'">'."\n";
 
-		$this->triggerEvent('onBeforeInclude', array(&$this, 'index.php'));
-		require_once(JPATH_THEMES.'/'.$this->_doc->template.'/themes/'.$this->getIndex());
-		$this->triggerEvent('onAfterInclude', array(&$this, 'index.php'));
-		
-		if ($this->_context == 'index') $this->loadModules('debug'); // Load the debug module position automatically
-
-		echo "</body>\n";
-		echo "</html>";
-	}
-	
-	// loads information in the <head></head> area of the document
-	function loadHead( )
-	{
-		$this->files->getFile( 'beforehead.php', 1 );
-		?>
-		<jdoc:include type="head" />
-		<?php
-		echo '<!-- LOAD CSS -->';
-		$this->_loadFiles('css');
-		echo '<!-- LOAD JS -->';
-		$this->_loadFiles('js');
-		$this->files->getFile( 'head.php', 1 );
-		if ($this->_debug) echo '<link rel="stylesheet" type="text/css" href="'.$this->_doc->baseurl.'/libraries/motif/css/debug.css" />'."\n";
-	}
-	
-	// determines if default or selected theme should be used for loading $filename
-	function getThemeName()
-	{
-		$filename = $this->_context.'.php';
-		return (JFile::exists($this->_themespath.'/'.$this->_theme.'/'.$filename) ? $this->_theme : $this->_coretheme);
-	}
-	
-	function getIndex()
-	{
-		if ($this->_context != 'index') return $this->getThemeName().'/'.$this->_context.'.php';
-		$index = $this->getThemeName().'/index.php';
-		if ($this->isHome()) {
-			if (JFile::exists($this->_themespath.'/'.$this->_coretheme.'/home.php')) $index = $this->_coretheme.'/home.php';
-			if ($this->_theme != $this->_coretheme && JFile::exists($this->_themespath.'/'.$this->_theme.'/home.php')) $index = $this->_theme.'/home.php';
+		if($this->files->hasFile('item'.JRequest::getVar('Itemid').'.php')) {
+			$this->files->getFile('item'.JRequest::getVar('Itemid').'.php');
+		} elseif($this->isHome() && $this->files->hasFile('home.php')) {
+			$this->files->getFile('home.php');
+		} else {
+			if($this->files->hasFile('index.php', 'theme')) {
+				$this->files->getFile('index.php', 'theme');
+			} else {
+				$this->files->getFile('index2.php', 'template');
+			}
 		}
-		return $index;
-	}
-	
-	// generates a body class based on these parameters of the active menu item: home, id, parent, and tree[0]
-	function getBodyClass()
-	{
-		if ($this->_context != 'index') return $this->_context;
-		if ($this->_bodyClass == '')
-			$this->setbodyClass(
-								'item'.$this->_activeItem->id
-								. ' root'.$this->_activeItem->tree[0]
-								. ' menu'.$this->_activeItem->menutype
-								. ($this->isHome() ? ' onhome' : ' notonhome')
-								. ' option'.str_replace('com_', '', JRequest::getVar('option', 'notdefined'))
-								. ' view'.JRequest::getVar('view', 'notdefined')
-								. ' '.$this->_activeItem->params->get('pageclass_sfx')
-								);
-								
-		return $this->_bodyClass;
-	}
-	
-	function setBodyClass( $bodyClass, $append = 0 )
-	{
-		$this->_bodyClass = $append ? $this->_bodyClass.' '.$bodyClass : $bodyClass;
-	}
-	
-	function isHome()
-	{
-		return $this->_activeItem->home;
+
+				
+		if ($this->context == 'index') $this->loadModules('debug'); // Load the debug module position automatically
+
 	}
 	
 	// Loads CSS/JS files
-	function _loadFiles($ext)
+	function loadCSS( $filenames = array() ) {
+		$this->_loadFiles('css', $filenames);
+	}
+	function loadJS( $filenames = array() ) {
+		$this->_loadFiles('js', $filenames);
+	}
+	function _loadFiles($ext, $filenames = array())
 	{	
-		$files = $this->files->get($ext);
+		$files = $this->files->get($ext, $filenames);
 
 		$fileload['css'][] = '<link rel="stylesheet" type="text/css" href="';
 		$fileload['css'][] = '" />';
@@ -216,14 +135,56 @@ class Motif extends JObject
 
 	}
 	
+	function unsetStyles() {
+		$this->doc->_style = array();
+	}
+	function unsetStyleSheets() {
+		$this->doc->_styleSheets = array();
+	}
+	function unsetScripts() {
+		$this->doc->_scripts = array();
+	}
+	function unsetScriptDeclarations() {
+		$this->doc->_script = array();
+	}
+		
+	
+	// generates a body class based on these parameters of the active menu item: home, id, parent, and tree[0]
+	function getBodyClass()
+	{
+		if ($this->context != 'index') return $this->context;
+		if ($this->bodyClass == '')
+			$this->setbodyClass(
+								'item'.$this->activeItem->id
+								. ' root'.$this->activeItem->tree[0]
+								. ' menu'.$this->activeItem->menutype
+								. ($this->isHome() ? ' onhome' : ' notonhome')
+								. ' option'.str_replace('com_', '', JRequest::getVar('option', 'notdefined'))
+								. ' view'.JRequest::getVar('view', 'notdefined')
+								. ' '.$this->activeItem->params->get('pageclass_sfx')
+								);
+								
+		return $this->bodyClass;
+	}
+	
+	function setBodyClass( $bodyClass, $append = 0 )
+	{
+		$this->bodyClass = $append ? $this->bodyClass.' '.$bodyClass : $bodyClass;
+	}
+	
+	function isHome()
+	{
+		return $this->activeItem->home;
+	}
+	
 	function isUserLoggedIn()
 	{
-		return !$this->_user->guest;
+		return !$this->user->guest;
 	}
 	
 	function countModules( $positions )
 	{
-		return $this->_doc->countModules($positions);
+		return $this->doc->countModules($positions);
 	}
 	
 	function hasModules( $positions )
@@ -235,24 +196,22 @@ class Motif extends JObject
 	function loadModules( $name, $style='', $preHtml='', $postHtml='', $attribs=array() )
 	{
 		$mainframe = JFactory::getApplication();
-		if ($this->_plugins) $mainframe->triggerEvent( 'onBeforeLoadModulePosition', array( &$this, &$name, &$style, &$preHtml, &$postHtml, &$attribs ) );
-		if ($style == '') $style = $this->_defaultModuleStyle;
-		if(JFile::exists(JPATH_THEMES.'/'.$this->_doc->template.'/html/modules.php'))
+		if ($style == '') $style = $this->defaultModuleStyle;
+		if(JFile::exists(JPATH_THEMES.'/'.$this->doc->template.'/html/modules.php'))
 		{
-			require_once(JPATH_THEMES.'/'.$this->_doc->template.'/html/modules.php');
+			require_once(JPATH_THEMES.'/'.$this->doc->template.'/html/modules.php');
 			if ($style == 'xhtml' && function_exists('modChrome_motifxhtml')) $style = 'motifxhtml';
 			if ($style == 'rounded' && function_exists('modChrome_motifrounded')) $style = 'motifrounded';
 		}
 		if ($this->countModules($name))
 		{
-			$renderer	= $this->_doc->loadRenderer('modules');
+			$renderer	= $this->doc->loadRenderer('modules');
 			$params		= array('style'=>$style);
 
 			foreach($attribs as $key=>$attrib) $params[$key] = $attrib;
 
 			echo $preHtml.$renderer->render( $name, $params ).$postHtml;
 		}
-		if ($this->_plugins) $mainframe->triggerEvent( 'onAfterLoadModulePosition', array( &$this, &$name, &$style, &$preHtml, &$postHtml, &$attribs ) );
 	}
 	
 	function loadModulePosition( $position )
@@ -279,9 +238,9 @@ class Motif extends JObject
 			if (!isset($position['postHTML'])) $position['postHTML'] = '';
 			if (!isset($position['attribs'])) $position['style'] = '';
 		}
-		require_once (JPATH_BASE.'/templates/'.$this->_doc->template.'/html'.'/positions.php');
-		if(JFile::exists(JPATH_BASE.'/templates/'.$this->_doc->template.'/'.$this->_theme.'/html'.'/positions.php'))
-			require_once(JPATH_BASE.'/templates/'.$this->_doc->template.'/'.$this->_theme.'/html'.'/positions.php');
+		require_once (JPATH_BASE.'/templates/'.$this->doc->template.'/html'.'/positions.php');
+		if(JFile::exists(JPATH_BASE.'/templates/'.$this->doc->template.'/'.$this->theme.'/html'.'/positions.php'))
+			require_once(JPATH_BASE.'/templates/'.$this->doc->template.'/'.$this->theme.'/html'.'/positions.php');
 		$positionsfunction = 'positions_'.$style;
 		if(function_exists($positionsfunction))
 		{
@@ -295,32 +254,32 @@ class Motif extends JObject
 	
 	function loadModule( $module, $preHtml='', $postHtml='', $params=array() )
 	{
-		$renderer	= $this->_doc->loadRenderer('module');
+		$renderer	= $this->doc->loadRenderer('module');
 		echo $preHtml.$renderer->render( $module, $params ).$postHtml;
 	}
 	
 	function setDefaultModuleStyle( $style )
 	{
-		$this->_defaultModuleStyle = $style;
+		$this->defaultModuleStyle = $style;
 	}
 	
 	function loadComponent( $preHtml='', $postHtml='' )
 	{
 		echo $preHtml;
-		//$this->_doc->getBuffer('component', null )
+		//$this->doc->getBuffer('component', null )
 		?><jdoc:include type="component" /><?php
 		echo $postHtml;
 	}
 
 	function hasMessage()
 	{
-		return $this->_doc->getBuffer('message');
+		return $this->doc->getBuffer('message');
 	}
 	
 	function loadMessage( $preHtml='', $postHtml='' )
 	{
 		if ($this->hasMessage()) {
-			//$renderer	= $this->_doc->loadRenderer('message');
+			//$renderer	= $this->doc->loadRenderer('message');
 			echo $preHtml;
 			//$renderer->render
 			?><jdoc:include type="message" /><?php
@@ -330,44 +289,22 @@ class Motif extends JObject
 	
 	function getSiteName()
 	{
-		return $this->_cfg->get( 'config.sitename' );
+		return $this->sitename;
 	}
 	
 	function getPageTitle()
 	{
-		return $this->_doc->title;
+		return $this->doc->title;
 	}
 	
 	function getHomeLink()
 	{
-		return $this->_doc->baseurl;
+		return $this->doc->baseurl;
 	}
 	
 	function getParameter( $name )
 	{
-		return $this->_doc->params->get($name);
-	}
-	
-	function triggerEvent($event, $params)
-	{
-		$mainframe = JFactory::getApplication();
-		if ($this->_plugins && ($this->_context == 'index' || $this->_context == 'component'))
-			$mainframe->triggerEvent( $event, $params);
-	}
-
-	function getBrowser()
-	{
-		if($this->_browser) return $this->_browser;
-		jimport('joomla.environment.browser');
-		
-		$this->_browser = JBrowser::getInstance();
-		
-		return $this->_browser;
-	}
-
-	function loadModuleChrome()
-	{
-		if($this->_usethemes) $this->files->getFile('html'.'/modules.php');
+		return $this->doc->params->get($name);
 	}
 	
 	function getMotifFiles()
@@ -377,15 +314,15 @@ class Motif extends JObject
 	
 	function compileLess($files=null)
 	{
-		$lessfiles = $files ? $files : $this->files->get('less');
+		$lessfiles = $files ? $files : $this->files->getFiles('less');
 		$less = new lessc;
-		$less->setFormatter($this->_lessFormatter);
+		$less->setFormatter($this->lessFormatter);
 		
 		if($lessfiles && count($lessfiles))
 		{
 			foreach($lessfiles as $lessfile)
 			{
-				$less->checkedCompile($lessfile, str_replace('.less', '.css', $lessfile));
+				$less->checkedCompile($lessfile, str_replace('less', 'css', $lessfile));
 			}
 		}
 	}

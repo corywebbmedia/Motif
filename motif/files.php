@@ -15,59 +15,45 @@ jimport( 'joomla.filesystem.folder' );
 
 class MotifFiles extends JObject
 {
-	var $_doc					= null;
-	var $_context				= '';
-	var $_themes				= true;
-	var $_theme					= 'core';
-	var $_coretheme				= 'core';
+	var $doc					= null;
+	var $context				= '';
+	var $theme					= '';
 	var $path					= '';
 	var $paths					= array();
 	var $url					= '';
 	var $urls					= array();
-	var $_browser				= null;
-	var $_debug					= 0;
+	var $debug					= 0;
 	var $images				= array();
 
-	function __construct( &$document, $browser, $context='index', $themes=true, $theme='core', $coretheme='core', $debug=0 )
+	function __construct( &$document, $context='index', $theme='', $debug=0 )
 	{
 		$mainframe = JFactory::getApplication();
 
-		$this->_doc			= $document;
-		$this->_browser		= $browser;
-		$this->_context		= $context;
-		$this->_themes		= $themes;
-		$this->_theme		= $theme;
-		$this->_coretheme	= $coretheme;
-		$this->path			= JPATH_THEMES.'/'.$this->_doc->template;
+		$this->doc			= $document;
+		$this->context		= $context;
+		$this->theme		= $theme;
+		$this->path			= JPATH_THEMES.'/'.$this->doc->template;
 		$this->paths		= $this->_getPaths();
-		$this->url			= $this->_doc->baseurl.'/templates/'.$this->_doc->template;
+		$this->url			= $this->doc->baseurl.'/templates/'.$this->doc->template;
 		$this->urls			= $this->_getUrls();
-		$this->_debug		= $debug;
+		$this->debug		= $debug;
 
 	}
 
-	// Get 3 paths: theme, core, and template
+	// Get 2 paths: theme and template
 	function _getPaths()
 	{
 		$paths = array();
-		if($this->_themes)
-		{
-			$paths['theme'] = $this->path.'/themes/'.$this->_theme;
-			if($this->_theme != $this->_coretheme) $paths['core'] = $this->path.'/themes/'.$this->_coretheme;
-		}
+		if($this->theme != '') $paths['theme'] = $this->path.'/themes/'.$this->theme;
 		$paths['template'] = $this->path;
 		return $paths;
 	}
 
-	// Get 3 URLs: theme, core and template
+	// Get 2 URLs: theme and template
 	function _getUrls()
 	{
 		$urls = array();
-		if($this->_themes)
-		{
-			$urls['theme'] = $this->url.'/themes/'.$this->_theme;
-			if($this->_theme != $this->_coretheme) $urls['core'] = $this->url.'/themes/'.$this->_coretheme;
-		}
+		if($this->theme != '') $urls['theme'] = $this->url.'/themes/'.$this->theme;
 		$urls['template'] = $this->url;
 		return $urls;
 	}
@@ -97,84 +83,38 @@ class MotifFiles extends JObject
 	}
 
 	// Get CSS, JS or less files
-	function getFiles($ext)
+	function getFiles($ext, $files_list=array())
 	{
 		$files = array();
 		$returnfiles = array();
-		$ext_folder = ($ext == 'less' ? 'css' : $ext);
+		$ext_folder = $ext;
 
 		if($this->paths && count($this->paths))
 		{
 			// STEP 1: Get all files with extension $ext from each path - template, theme, and core theme
 			foreach($this->paths as $key => $path) {
 				$files[$key] = array();
-				if (JFile::exists($path.'/'.$ext_folder.'/order.php'))
-				{
-					include($path.'/'.$ext_folder.'/order.php');
-					$files[$key] = $ordered;
-				}
-				else
-				{
-					if (JFolder::exists($path.'/'.$ext_folder))
-						$files[$key] = JFolder::files($path.'/'.$ext_folder, '.'.$ext.'$', false, false);
-				}
+				if (JFolder::exists($path.'/'.$ext_folder))
+					$files[$key] = JFolder::files($path.'/'.$ext_folder, '.'.$ext.'$', false, false);
 			}
 
-			// STEP 2: Loop through all of the files from step 1, and remove overridden files. Theme > Core Theme > Template
-			if($ext == 'less')
+			// STEP 2: Loop through all of the files from step 1, and remove overridden files. Theme > Template
+			foreach($files as $key => $pathfiles)
 			{
-				foreach($files as $key=>$pathfiles)
+				$file_location = $this->urls[$key].'/'.$ext_folder.'/';
+				if($ext == 'less') $file_location = $this->paths[$key].'/'.$ext_folder.'/';
+				foreach($pathfiles as $file)
 				{
-					foreach($pathfiles as $file)
+					if(!in_array($file, $returnfiles))
 					{
-						$returnfiles[] = $this->paths[$key].'/css/'.JFile::getName($file);
+						$returnfiles[] = $file_location.JFile::getName($file);
 					}
 				}
 			}
-			else
-			{
-				$browserfiles = array();
-				foreach($files as $key => $pathfiles)
-				{
-					foreach($pathfiles as $file)
-					{
-						if(!in_array($file, $returnfiles))
-						{
-							if (!strstr(JFile::getName($file), 'browser_ie'))
-							{
-								$returnfiles[] = $this->urls[$key].'/'.$ext_folder.'/'.JFile::getName($file);
-							} else {
-								if ($this->_browsermatch(JFile::getName($file), $ext)) $browserfiles[] = $this->urls[$key].'/'.$ext_folder.'/'.JFile::getName($file);
-							}
-						}
-					}
-				}
 
-
-				// STEP 3: Add browser-specific files to the array if they match the current browser.
-				if ( count($browserfiles) )
-				{
-					foreach($broserfiles as $browserfile)
-					{
-						$returnfiles[] = $browserfile;
-					}
-				}
-			}
 		}
 		return $returnfiles;
 
-	}
-
-	function _browserMatch( $filename, $ext )
-	{
-		if (strpos($filename, 'browser_ie') === 0) // file name starts with 'browser_ie'
-		{
-			if ($this->_browser->_browser != 'msie') return false;
-			if ($filename == 'browser_ie.'.$ext) return true;
-			if ($this->_browser->_majorVersion == substr($filename, 10, 1)) return true;
-			return false;
-		}
-		return true;
 	}
 
 	function getImage( $name, $ext = 'any' )
@@ -206,26 +146,49 @@ class MotifFiles extends JObject
 		$this->images[$name] = $location;
 	}
 
-	function getFile( $name, $ignoredebug = 0 )
+	function getFile( $name, $path_key='', $ignoredebug = 0 )
 	{
 		$loadfile = '';
-		if($this->paths && count($this->paths))
-		{
-			foreach($this->paths as $path)
-			{
-				if (JFile::exists($path.'/'.$name))
+		if($path_key != '') {
+			if($this->hasFile($name, $path_key)) $loadfile = $this->paths[$path_key].'/'.$name;
+		} else {
+			if($this->paths && count($this->paths)) {
+				foreach($this->paths as $key=>$path)
 				{
-					$loadfile = $path.'/'.$name;
-					break;
+					if ($this->hasFile($name, $key))
+					{
+						$loadfile = $path.'/'.$name;
+						break;
+					}
 				}
 			}
 		}
 
 		if ($loadfile != '') {
-			if ($this->_debug && !$ignoredebug) echo '<div class="outlinefile"><h3 class="outlinelabel">'.$loadfile.'</h3><div class="outlineoverlay"></div>';
+			if ($this->debug && !$ignoredebug) echo '<div class="outlinefile"><h3 class="outlinelabel">'.$loadfile.'</h3><div class="outlineoverlay"></div>';
 			require_once($loadfile);
-			if ($this->_debug && !$ignoredebug) echo '</div>';
+			if ($this->debug && !$ignoredebug) echo '</div>';
 		}
+	}
+	
+	function hasFile( $name, $path_key='' ) {
+		if($path_key != '') {
+			if($this->paths && isset($this->paths[$path_key])) {
+				return( JFile::exists($this->paths[$path_key].'/'.$name) );
+			}
+		} else {
+			if($this->paths && count($this->paths)) {
+				foreach($this->paths as $path)
+				{
+					if (JFile::exists($path.'/'.$name))
+					{
+						return true;
+					}
+				}
+			}
+		}
+		
+		return false;
 	}
 
 }

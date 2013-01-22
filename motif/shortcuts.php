@@ -31,10 +31,9 @@ function modules( $name, $style='raw', $preHtml='', $postHtml='', $attribs=array
 	$motif = Motif::getInstance();
 	$motif->loadModules( $name, $style, $preHtml, $postHtml, $attribs );
 }
-function modulePosition( $position )
+function position( $name, $style='', $preHtml='', $postHtml='', $attribs=array() )
 {
-	$motif = Motif::getInstance();
-	$motif->loadModulePosition( $position );
+	modules( $name, $style, $preHtml, $postHtml, $attribs);
 }
 /* Loads a single module. */
 function module( $module, $preHtml='', $postHtml='', $params=array() )
@@ -42,16 +41,36 @@ function module( $module, $preHtml='', $postHtml='', $params=array() )
 	$motif = Motif::getInstance();
 	$motif->loadModule( $module, $preHtml, $postHtml, $params );
 }
-function position( $name, $style='', $preHtml='', $postHtml='', $attribs=array() )
-{
+
+function unsetStyles() {
 	$motif = Motif::getInstance();
-	return $motif->getPosition( $name, $style, $preHtml, $postHtml, $attribs );
+	$motif->unsetStyles();
 }
-function positions( $positions, $style='none' )
-{
+function unsetStyleSheets() {
 	$motif = Motif::getInstance();
-	$motif->loadPositions( $positions, $style );
+	$motif->unsetStyleSheets();
 }
+function unsetScripts() {
+	$motif = Motif::getInstance();
+	$motif->unsetScripts();
+}
+function unsetScriptDeclarations() {
+	$motif = Motif::getInstance();
+	$motif->unsetScriptDeclarations();
+}
+function loadCSS( $filenames = array() ) {
+	$motif = Motif::getInstance();
+	$motif->loadCSS( $filenames );
+}
+function loadJS( $filenames = array() ) {
+	$motif = Motif::getInstance();
+	$motif->loadJS( $filenames );
+}
+function getBodyClass() {
+	$motif = Motif::getInstance();
+	return $motif->getBodyClass();
+}
+
 /* Setting $style in the modules function is optional and defaults to "raw". You can override the default with this function. */
 function setDefaultModuleStyle( $style )
 {
@@ -147,12 +166,6 @@ function getParameter( $name )
 {
 	$motif = Motif::getInstance();
 	return $motif->getParameter( $name );
-}
-/* Returns the JBrowser object with the user's browser info. */
-function getBrowser()
-{
-	$motif = Motif::getInstance();
-	return $motif->getBrowser();
 }
 
 /*
