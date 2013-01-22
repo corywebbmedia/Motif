@@ -36,12 +36,13 @@ class Motif extends JObject
 	var $plugins				= 0;
 	var $lessFormatter			= 'lessjs';
 	var $files					= null;
+	var $jVersion				= '';
 
 	function __construct()
 	{
 		$mainframe = JFactory::getApplication();
 		$menu = $mainframe->getMenu();
-		$sitename = $mainframe->getCfg('sitename');
+		$this->sitename = $mainframe->getCfg('sitename');
 		
 		$this->doc = JFactory::getDocument();
 		$this->context = JRequest::getVar('tmpl', '') == 'component' ? 'component' : 'index';
@@ -77,6 +78,10 @@ class Motif extends JObject
 		}
 		
 		return $instance;
+	}
+	
+	function _getJVersion() {
+		$this->jVersion = JVERSION;
 	}
 		
 	function _getTheme()
