@@ -41,7 +41,7 @@ class Motif extends JObject
 	{
 		$mainframe = JFactory::getApplication();
 		$menu = $mainframe->getMenu();
-		$sitename = $mainframe->getCfg('sitename');
+		$this->sitename = $mainframe->getCfg('sitename');
 		
 		$this->doc = JFactory::getDocument();
 		$this->context = JRequest::getVar('tmpl', '') == 'component' ? 'component' : 'index';
