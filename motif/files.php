@@ -146,7 +146,7 @@ class MotifFiles extends JObject
 		$this->images[$name] = $location;
 	}
 
-	function getFile( $name, $path_key='', $ignoredebug = 0 )
+	function getFileLocation( $name, $path_key='' )
 	{
 		$loadfile = '';
 		if($path_key != '') {
@@ -158,17 +158,12 @@ class MotifFiles extends JObject
 					if ($this->hasFile($name, $key))
 					{
 						$loadfile = $path.'/'.$name;
-						break;
 					}
 				}
 			}
 		}
 
-		if ($loadfile != '') {
-			if ($this->debug && !$ignoredebug) echo '<div class="outlinefile"><h3 class="outlinelabel">'.$loadfile.'</h3><div class="outlineoverlay"></div>';
-			require_once($loadfile);
-			if ($this->debug && !$ignoredebug) echo '</div>';
-		}
+		return $loadfile;
 	}
 	
 	function hasFile( $name, $path_key='' ) {

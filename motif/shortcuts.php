@@ -103,8 +103,7 @@ The function will search the default them and the core theme to see if the file 
 function getFile( $filename )
 {
 	$motif = Motif::getInstance();
-	$files = $motif->getMotifFiles();
-	$files->getFile( $filename );
+	$motif->loadFile($filename);
 }
 /* Loads sidebar.php or sidebar_$name.php if you enter a value for $name. This function is the same as calling getFile('sidebar.php') */
 function getSidebar( $name = '' )

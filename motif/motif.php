@@ -98,18 +98,16 @@ class Motif extends JObject
 	
 	function load()
 	{
-		$mainframe = JFactory::getApplication();
-
 
 		if($this->files->hasFile('item'.JRequest::getVar('Itemid').'.php')) {
-			$this->files->getFile('item'.JRequest::getVar('Itemid').'.php');
+			$this->loadFile('item'.JRequest::getVar('Itemid').'.php');
 		} elseif($this->isHome() && $this->files->hasFile('home.php')) {
-			$this->files->getFile('home.php');
+			$this->loadFile('home.php');
 		} else {
 			if($this->files->hasFile('index.php', 'theme')) {
-				$this->files->getFile('index.php', 'theme');
+				$this->loadFile('index.php', 'theme');
 			} else {
-				$this->files->getFile('index2.php', 'template');
+				$this->loadFile('index2.php', 'template');
 			}
 		}
 
@@ -315,6 +313,15 @@ class Motif extends JObject
 	function getMotifFiles()
 	{
 		return $this->files;
+	}
+	
+	function loadFile($filename, $path_key='') {
+		$loadfile = $this->files->getFileLocation($filename, $path_key);
+		if ($loadfile != '') {
+			if ($this->debug && !$ignoredebug) echo '<div class="outlinefile"><h3 class="outlinelabel">'.$loadfile.'</h3><div class="outlineoverlay"></div>';
+			require_once($loadfile);
+			if ($this->debug && !$ignoredebug) echo '</div>';
+		}
 	}
 	
 	function compileLess($files=null)
